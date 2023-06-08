@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+  <title>log in</title>
+  <link rel="stylesheet" href="css/login.css">
+</head>
+
+<body>
+
+<header>
+  <h2 class="logo">cool</h2>
+<!--  <nav class="navigation">-->
+<!--    <a href="#" class="active">Home</a>-->
+<!--    <a href="#">About us</a>-->
+<!--    <a href="#">Service</a>-->
+<!--    <a href="#">Contact</a>-->
+<!--    <a href="login.html">Log in</a>-->
+<!--  </nav>-->
+</header>
+
+
+
+<div class="container">
+  <div class="form-box">
+    <!-- 注册 -->
+    <div class="register-box hidden">
+      <h1>register</h1>
+<!--      <input type="text" placeholder="用户名">-->
+<!--      <input type="email" placeholder="邮箱">-->
+<!--      <input type="password" placeholder="密码">-->
+<!--      <input type="password" placeholder="确认密码">-->
+<!--      <a href="index.html"><button>注册</button></a>-->
+
+      <input type="text" placeholder="用户名">
+      <input type="email" placeholder="邮箱">
+      <input type="password" placeholder="密码">
+      <input type="password" placeholder="确认密码">
+      <button type="button" onclick="excuteRegister()">注册</button>
+<!--      <a href="index.html"><button>注册</button></a>-->
+    </div>
+
+
+
+    <!-- 登录 -->
+    <div class="login-box">
+      <h1>login</h1>
+<!--      action="./login" method="POST"-->
+      <form action="loginservlet" method="POST">
+
+<!--        <label for="loginUsername">Username:</label>-->
+<!--        <input type="text" id="loginUsername" name="loginUsername" required>-->
+<!--&lt;!&ndash;        <br>&ndash;&gt;-->
+<!--&lt;!&ndash;        <label for="loginPassword">Password:</label>&ndash;&gt;-->
+<!--        <input type="password" id="loginPassword" name="loginPassword" required>-->
+<!--&lt;!&ndash;        <br>&ndash;&gt;-->
+<!--        <button>登录</button>-->
+        <input type="text" placeholder="用户名" name="loginUsername" required>
+        <input type="password" placeholder="密码" name="loginPassword" required>
+        <!--      <button>登录</button>-->
+<!--        <a href="index.html"><button>登录</button></a>-->
+<!--        <input type="text" placeholder="用户名">-->
+<!--        <input type="password" placeholder="密码">-->
+        <button id="login-button" class="login-register" type="button" onclick=submitLoginMessage()>Login</button>
+<!--        <input class="submit" type="submit" value="Login" onclick=submitLoginMessage()>-->
+
+      </form>
+    </div>
+  </div>
+
+
+  <script src="js/jquery/jquery-3.6.0.js"></script>
+  <script type="text/javascript">
+    function submitLoginMessage(){
+      $.ajax({
+        type:"get",
+        url:"http://localhost:8081/webgis/loginservlet",
+        data:{
+          username:$("input[name='loginUsername']").val(),
+          password:$("input[name='loginPassword']").val(),
+        },
+        //dataType:"text",
+        success:function (userMsg){
+          if(userMsg=== '1')
+          {
+            //<a href="index.html"><button>注册</button></a>
+            //window.location.href = ("http://localhost:8081/webgis/index.html");
+            location.href = "http://localhost:8081/webgis/whumap.html";
+            // http://localhost:8081/webgis/index.html
+          }
+          else if(userMsg=== '2')
+          {
+            //<a href="index.html"><button>注册</button></a>
+            //window.location.href = ("http://localhost:8081/webgis/index.html");
+            location.href = "http://localhost:8081/webgis/whumap2.html";
+            // http://localhost:8081/webgis/index.html
+          }
+          else if(userMsg=== '3')
+          {
+            //<a href="index.html"><button>注册</button></a>
+            //window.location.href = ("http://localhost:8081/webgis/index.html");
+            location.href = "http://localhost:8081/webgis/map.html";
+            // http://localhost:8081/webgis/index.html
+          }
+          else{
+            //alert("<msg>");
+            //this.$message()
+            alert("login failed");
+          }
+        },
+        fail:() => {
+          console.log("error");
+        }
+      })
+      return false;
+    }
+  </script>
+<script type="text/javascript">
+  function excuteRegister(){
+    $.ajax({
+      type:"get",
+      url:"/Register",
+      data:{
+        username:$("input[name='registerName']").val(),
+        password:$("input[name='registerCode']").val(),
+      },
+      success:function (data){
+        if(data=="0"){
+          alert("format error!");
+        }
+        else{
+          alert("register successfully!")
+        }
+      }
+    })
+  }
+</script>
+
+  <div class="con-box left">
+    <h2>美丽武汉<span>清凉路径</span></h2>
+    <p>快来领取属于你的<span>夏日清凉</span>吧</p>
+    <img src="src/login/1.png" alt="">
+    <p>已有账号</p>
+    <button id="login">去登录</button>
+  </div>
+  <div class="con-box right">
+    <h2><span>Cool Travel</span><br>of beautiful Wuhan</h2>
+    <p>Come and Get your<br><span>Exclusive Cool Travel</span></p>
+    <img src="src/login/2.png" alt="">
+    <p>没有账号？</p>
+    <button id="register">去注册</button>
+  </div>
+</div>
+<script>
+  // 要操作到的元素
+  let login=document.getElementById('login');
+  let register=document.getElementById('register');
+  let form_box=document.getElementsByClassName('form-box')[0];
+  let register_box=document.getElementsByClassName('register-box')[0];
+  let login_box=document.getElementsByClassName('login-box')[0];
+  // 去注册按钮点击事件
+  register.addEventListener('click',()=>{
+    form_box.style.transform='translateX(80%)';
+    login_box.classList.add('hidden');
+    register_box.classList.remove('hidden');
+  })
+  // 去登录按钮点击事件
+  login.addEventListener('click',()=>{
+    form_box.style.transform='translateX(0%)';
+    register_box.classList.add('hidden');
+    login_box.classList.remove('hidden');
+  })
+</script>
+</body>
+
+</html>

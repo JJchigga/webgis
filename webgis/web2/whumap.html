@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<header>
+  <h2 class="logo">cool</h2>
+  <nav class="navigation">
+    <a href="index.html">Home</a>
+    <a href="login.html">Log in</a>
+    <a href="message.html">Introduction</a>
+    <a href="map.html">Walk Map</a>
+<!--    <a href="cool_map.html">Cool Map</a>-->
+    <!--        <a href="service_home.html">Service</a>-->
+    <a href="whumap.html" class="active">WHU Map</a>
+  </nav>
+</header>
+
+<head>
+  <title>WHU-Map</title>
+  <meta charset="UTF-8">
+<!--  <meta http-equiv="X-UA-Compatible" content="IE=edge">-->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.5.0/css/ol.css" type="text/css">
+  <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.5.0/build/ol.js"></script>
+  <style type="text/css">
+    body, html, div, ul, li, iframe, p, img {
+      border: none;
+      padding: 0;
+      margin: 0;
+      font-size: 14px;
+      /*font-family: "微软雅黑";*/
+      box-sizing: border-box;
+      font-family: 'Poppins',sans-serif;
+    }
+    /*调整header*/
+    header
+    {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 30px 100px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      z-index: 100;
+    }
+
+    /*调整logo*/
+    .logo {
+      font-size: 2em;
+      color: #359381;
+      pointer-events: none;
+      margin-right: 270px;
+    }
+
+    .navigation a {
+      text-decoration: none;
+      color: #359381;
+      padding: 6px 15px;
+      border-radius: 20px;
+      margin: 0 10px;
+      font-weight: 600;
+    }
+
+    .navigation a:hover,
+    .navigation a.active {
+      background: #359381;
+      color: #fff;
+    }
+
+    #mapCon {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+    }
+    /* 图层控件层样式设置 */
+    .layerControl {
+      position: absolute;
+      bottom: 5px;
+      min-width: 200px;
+      max-height: 200px;
+      right: 0px;
+      top: 5px;
+      /*在地图容器中的层，要设置z-index的值让其显示在地图上层*/
+      z-index: 2001;
+      color: #ffffff;
+      background-color: #4c4e5a;
+      /*边缘的宽度*/
+      border-width: 10px;
+      /*圆角的大小 */
+      border-radius: 10px;
+      /*边框颜色*/
+      border-color: #000 #000 #000 #000;
+    }
+
+    .layerControl .title {
+      font-weight: bold;
+      font-size: 15px;
+      margin: 10px;
+    }
+
+    .layerTree li {
+      list-style: none;
+      margin: 5px 10px;
+    }
+    /* 鼠标位置控件层样式设置 */
+    #mouse-position {
+      float: left;
+      position: absolute;
+      bottom: 5px;
+      width: 200px;
+      height: 20px;
+      /*在地图容器中的层，要设置z-index的值让其显示在地图上层*/
+      z-index: 2000;
+    }
+    /* 鼠标位置信息自定义样式设置 */
+    .custom-mouse-position {
+      color: rgb(0,0,0);
+      font-size: 16px;
+      font-family: "微软雅黑";
+    }
+  </style>
+</head>
+<body>
+<div id="mapCon">
+  <div id="mouse-position"></div>
+  <div id="layerControl" class="layerControl">
+    <div class="title"><label>Footprint map</label></div>
+    <ul id="layerTree" class="layerTree"></ul>
+  </div>
+</div>
+<script type="text/javascript">
+  //map中的图层数组
+  var layer = new Array();
+  //图层名称数组
+  var layerName = new Array();
+  //图层可见属性数组
+  var layerVisibility = new Array();
+
+  /**
+   * 加载图层列表数据
+   * @param {ol.Map} map 地图对象
+   * @param {string} id 图层列表容器ID
+   */
+  function loadLayersControl(map, id) {
+    //图层目录容器
+    var treeContent = document.getElementById(id);
+    //获取地图中所有图层
+    var layers = map.getLayers();
+    for (var i = 0; i < layers.getLength() ; i++) {
+      //获取每个图层的名称、是否可见属性
+      layer[i] = layers.item(i);
+      layerName[i] = layer[i].get('name');
+      layerVisibility[i] = layer[i].getVisible();
+      //新增li元素，用来承载图层项
+      var elementLi = document.createElement('li');
+      // 添加子节点
+      treeContent.appendChild(elementLi);
+      //创建复选框元素
+      var elementInput = document.createElement('input');
+      elementInput.type = "checkbox";
+      elementInput.name = "layers";
+      elementLi.appendChild(elementInput);
+      //创建label元素
+      var elementLable = document.createElement('label');
+      elementLable.className = "layer";
+      //设置图层名称
+      setInnerText(elementLable, layerName[i]);
+      elementLi.appendChild(elementLable);
+      //设置图层默认显示状态
+      if (layerVisibility[i]) {
+        elementInput.checked = true;
+      }
+      //为checkbox添加变更事件
+      addChangeEvent(elementInput, layer[i]);
+    }
+  }
+  /**
+   * 为checkbox元素绑定变更事件
+   * @param {input} element checkbox元素
+   * @param {ol.layer.Layer} layer 图层对象
+   */
+  function addChangeEvent(element, layer) {
+    element.onclick = function () {
+      if (element.checked) {
+        //显示图层
+        layer.setVisible(true);
+      }
+      else {
+        //不显示图层
+        layer.setVisible(false);
+      }
+    };
+  }
+  /**
+   * 动态设置元素文本内容（兼容）
+   */
+  function setInnerText(element, text) {
+    if (typeof element.textContent == "string") {
+      element.textContent = text;
+    } else {
+      element.innerText = text;
+    }
+  }
+
+  //实例化鼠标位置控件（MousePosition）
+  var mousePositionControl = new ol.control.MousePosition({
+    //坐标格式
+    coordinateFormat: ol.coordinate.createStringXY(4),
+    //地图投影坐标系（若未设置则输出为默认投影坐标系下的坐标）
+    projection: 'EPSG:4326',
+    //坐标信息显示样式类名，默认是'ol-mouse-position'
+    className: 'custom-mouse-position',
+    //显示鼠标位置信息的目标容器
+    target: document.getElementById('mouse-position'),
+    //未定义坐标的标记
+    undefinedHTML: '&nbsp;'
+  });
+  //实例化比例尺控件（ScaleLine）
+  var scaleLineControl = new ol.control.ScaleLine({
+    //设置比例尺单位，degrees、imperial、us、nautical、metric（度量单位）
+    units: "metric"
+  });
+
+  var WHU_Map = new ol.layer.Tile({
+    name: "底图",
+    source: new ol.source.XYZ({
+      url: "http://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7",//parent.TiandituKey()为天地图密钥,
+      wrapX: false
+    })
+  });
+
+  //创建一个点
+  var Jpoint1 = new ol.Feature({
+    geometry: new ol.geom.Point([114.3645,30.5351])
+  });
+  //设置点1的样式信息
+  Jpoint1.setStyle(new ol.style.Style({
+    //填充色
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 255, 0.2)'
+    }),
+    //边线颜色
+    stroke: new ol.style.Stroke({
+      color: '#ffcc33',
+      width: 2
+    }),
+    //形状
+    image: new ol.style.Circle({
+      radius: 15,
+      fill: new ol.style.Fill({
+        color: '#ffcc33'
+      })
+    })
+  }));
+
+  var Jpoint2 = new ol.Feature({
+    geometry: new ol.geom.Point([114.3612,30.5265])
+  });
+  //设置点1的样式信息
+  Jpoint2.setStyle(new ol.style.Style({
+    //填充色
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 255, 0.2)'
+    }),
+    //边线颜色
+    stroke: new ol.style.Stroke({
+      color: '#ffcc33',
+      width: 2
+    }),
+    //形状
+    image: new ol.style.Circle({
+      radius: 15,
+      fill: new ol.style.Fill({
+        color: '#ffcc33'
+      })
+    })
+  }));
+
+  var Jpoint3 = new ol.Feature({
+    geometry: new ol.geom.Point([114.3613,30.5276])
+  });
+  //设置点1的样式信息
+  Jpoint3.setStyle(new ol.style.Style({
+    //填充色
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 255, 0.2)'
+    }),
+    //边线颜色
+    stroke: new ol.style.Stroke({
+      color: '#ffcc33',
+      width: 2
+    }),
+    //形状
+    image: new ol.style.Circle({
+      radius: 15,
+      fill: new ol.style.Fill({
+        color: '#ffcc33'
+      })
+    })
+  }));
+
+  var Jpoint4 = new ol.Feature({
+    geometry: new ol.geom.Point([114.3584,30.5272])
+  });
+  //设置点1的样式信息
+  Jpoint4.setStyle(new ol.style.Style({
+    //填充色
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 255, 0.2)'
+    }),
+    //边线颜色
+    stroke: new ol.style.Stroke({
+      color: '#ffcc33',
+      width: 2
+    }),
+    //形状
+    image: new ol.style.Circle({
+      radius: 15,
+      fill: new ol.style.Fill({
+        color: '#ffcc33'
+      })
+    })
+  }));
+
+  var Jpoint5 = new ol.Feature({
+    geometry: new ol.geom.Point([114.3608,30.5380])
+  });
+
+  var Lpoint1 = new ol.Feature({
+    geometry: new ol.geom.Point([114.3584,30.5272])
+  });
+  //设置点1的样式信息
+  Lpoint1.setStyle(new ol.style.Style({
+    //填充色
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 255, 0.2)'
+    }),
+    //边线颜色
+    stroke: new ol.style.Stroke({
+      color: '#ff3333',
+      width: 2
+    }),
+    //形状
+    image: new ol.style.Circle({
+      radius: 15,
+      fill: new ol.style.Fill({
+        color: '#ff3333'
+      })
+    })
+  }));
+
+  var Lpoint2 = new ol.Feature({
+    geometry: new ol.geom.Point([114.3574,30.5388])
+  });
+  //设置点1的样式信息
+  Lpoint2.setStyle(new ol.style.Style({
+    //填充色
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 255, 0.2)'
+    }),
+    //边线颜色
+    stroke: new ol.style.Stroke({
+      color: '#ff3333',
+      width: 2
+    }),
+    //形状
+    image: new ol.style.Circle({
+      radius: 15,
+      fill: new ol.style.Fill({
+        color: '#ff3333'
+      })
+    })
+  }));
+
+  var Lpoint3 = new ol.Feature({
+    geometry: new ol.geom.Point([114.3608,30.5381])
+  });
+  //设置点1的样式信息
+  Lpoint3.setStyle(new ol.style.Style({
+    //填充色
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 255, 0.2)'
+    }),
+    //边线颜色
+    stroke: new ol.style.Stroke({
+      color: '#ff3333',
+      width: 2
+    }),
+    //形状
+    image: new ol.style.Circle({
+      radius: 15,
+      fill: new ol.style.Fill({
+        color: '#ff3333'
+      })
+    })
+  }));
+
+  var Lpoint4 = new ol.Feature({
+    geometry: new ol.geom.Point([114.3636,30.5431])
+  });
+  //设置点1的样式信息
+  Lpoint4.setStyle(new ol.style.Style({
+    //填充色
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 255, 0.2)'
+    }),
+    //边线颜色
+    stroke: new ol.style.Stroke({
+      color: '#ff3333',
+      width: 2
+    }),
+    //形状
+    image: new ol.style.Circle({
+      radius: 15,
+      fill: new ol.style.Fill({
+        color: '#ff3333'
+      })
+    })
+  }));
+
+  var Zpoint1 = new ol.Feature({
+    geometry: new ol.geom.Point([114.3636,30.5431])
+  });
+  //设置点1的样式信息
+  Zpoint1.setStyle(new ol.style.Style({
+    //填充色
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 255, 0.2)'
+    }),
+    //边线颜色
+    stroke: new ol.style.Stroke({
+      color: '#3374ff',
+      width: 2
+    }),
+    //形状
+    image: new ol.style.Circle({
+      radius: 15,
+      fill: new ol.style.Fill({
+        color: '#3374ff'
+      })
+    })
+  }));
+
+  var Zpoint2 = new ol.Feature({
+    geometry: new ol.geom.Point([114.3592,30.5280])
+  });
+  //设置点1的样式信息
+  Zpoint2.setStyle(new ol.style.Style({
+    //填充色
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 255, 0.2)'
+    }),
+    //边线颜色
+    stroke: new ol.style.Stroke({
+      color: '#3374ff',
+      width: 2
+    }),
+    //形状
+    image: new ol.style.Circle({
+      radius: 15,
+      fill: new ol.style.Fill({
+        color: '#3374ff'
+      })
+    })
+  }));
+
+  var Zpoint3 = new ol.Feature({
+    geometry: new ol.geom.Point([114.3686,30.5347])
+  });
+  //设置点1的样式信息
+  Zpoint3.setStyle(new ol.style.Style({
+    //填充色
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 255, 0.2)'
+    }),
+    //边线颜色
+    stroke: new ol.style.Stroke({
+      color: '#3374ff',
+      width: 2
+    }),
+    //形状
+    image: new ol.style.Circle({
+      radius: 15,
+      fill: new ol.style.Fill({
+        color: '#3374ff'
+      })
+    })
+  }));
+
+  var Zpoint4 = new ol.Feature({
+    geometry: new ol.geom.Point([114.3664,30.5389])
+  });
+  //设置点1的样式信息
+  Zpoint4.setStyle(new ol.style.Style({
+    //填充色
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 255, 0.2)'
+    }),
+    //边线颜色
+    stroke: new ol.style.Stroke({
+      color: '#3374ff',
+      width: 2
+    }),
+    //形状
+    image: new ol.style.Circle({
+      radius: 15,
+      fill: new ol.style.Fill({
+        color: '#3374ff'
+      })
+    })
+  }));
+  //实例化一个矢量图层Vector作为绘制层
+  var source1 = new ol.source.Vector({
+    features: [Jpoint1,Jpoint2,Jpoint3,Jpoint4,Jpoint5]
+  });
+
+  var source2 = new ol.source.Vector({
+    features: [Lpoint1,Lpoint2,Lpoint3,Lpoint4]
+  });
+
+  var source3 = new ol.source.Vector({
+    features: [Zpoint1,Zpoint2,Zpoint3,Zpoint4]
+  });
+
+
+  //创建一个图层
+  var vector1 = new ol.layer.Vector({
+    name: "王文杰",
+    source: source1
+  });
+  var vector2 = new ol.layer.Vector({
+    name: "卢威仪",
+    source: source2
+  });
+  var vector3 = new ol.layer.Vector({
+    name: "张玉宇",
+    source: source3
+  });
+
+  var vector4 = new ol.layer.Tile({
+    name:"city",
+    source: new ol.source.TileWMS({
+      url: 'http://localhost:8080/geoserver/cite/wms', //  这个地址是在geoserver里面进行图层预览的地址是一致
+      params: {
+        'LAYERS': 'cite:china_city', // 这里的名字需要与空间定义的一样
+        'TILED': true
+      },
+      serverType: 'geoserver',
+      transition: 0
+    })
+  });
+
+
+
+  //实例化Map对象加载地图
+  var map = new ol.Map({
+    //地图容器div的ID
+    target: 'mapCon',
+    //地图容器中加载的图层
+    layers: [WHU_Map,vector1,vector2,vector3,vector4],
+    //地图视图设置
+    view: new ol.View({
+      //地图初始中心点
+      projection: 'EPSG:4326',
+      center: [114.3645,30.5395],
+      zoom: 5,
+
+    }),
+    //加载控件到地图容器中
+    controls: ol.control.defaults({//地图中默认控件
+      /* @type {ol.control.Attribution} */
+      attributionOptions: ({
+        //地图数据源信息控件是否可收缩,默认为true
+        collapsible: true
+      })
+    }).extend([mousePositionControl])//加载鼠标位置控件
+
+
+  });
+  loadLayersControl(map, "layerTree");
+</script>
+</body>
+</html>

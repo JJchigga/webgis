@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Simple Map</title>
+    <!-- web-fonts -->
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700,500' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
+    <!-- off-canvas -->
+    <link href="css/cool_map/moblie-menu.css" rel="stylesheet">
+    <!-- font-awesome -->
+    <link href="css/cool_map/font-awesome.min.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="css/cool_map/bootstrap.min.css">
+    <!-- Style CSS -->
+    <link href="css/cool_map/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/cool_map/cool_map.css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>-->
+<!--    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>-->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.bootcdn.net/ajax/libs/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <script src="main.js"></script>
+    <script src="openLayers-v7.1.0/dist/ol.js"></script>
+<!--    <script type="text/javascript" src="js/jquery/jquery-3.6.0.js"></script>-->
+    <style>
+
+
+        #mapArea{
+            height: 87%;
+            width: 100%;
+            position: absolute;
+            top: 100px;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        /*.ol-overlaycontainer-stopevent {*/
+        /*    visibility: hidden !important;*/
+        /*}*/
+
+
+        .custom-mouse-position {
+            width: 130px;
+            height: auto;
+        }
+        #start {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        #end {
+            position: absolute;
+            top: 10px;
+            right: 140px;
+        }
+
+        #generate {
+            position: absolute;
+            top: 10px;
+            right: 270px;
+        }
+
+        #shadow {
+            position: absolute;
+            top: 10px;
+            right: 400px;
+        }
+
+        .btn {
+            line-height: 15px;
+            /* 清除背景色 */
+            background: transparent;
+            /* 边框样式、颜色、宽度 */
+            border: 2px solid #0099CC;
+            /* 给边框添加圆角 */
+            border-radius: 10px;
+            /* 字母转大写 */
+            color: white;
+            /*padding: 16px 32px;*/
+            text-align: center;
+            display: inline-block;
+            font-size: 16px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+        }
+        .btn1 {
+            background-color: white;
+            color: black;
+            border: 2px solid #008CBA;
+        }
+        /* 悬停样式 */
+        .btn1:hover {
+            background-color: #008CBA;
+            color: white;
+        }
+        #tuli{
+            position: absolute;
+            right: 10px;
+            bottom: 30px;
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h2 class="logo">cool</h2>
+    <nav class="navigation">
+        <a href="index.html">Home</a>
+        <a href="login.html">Log in</a>
+        <a href="message.html">Introduction</a>
+        <a href="map.html">Walk Map</a>
+        <a href="cool_map.html" class="active">Cool Map</a>
+        <!--        <a href="service_home.html">Service</a>-->
+        <a href="whumap.html">WHU Map</a>
+    </nav>
+</header>
+
+<div style="float: none">
+<!--    <nav class="navbar m-menu navbar-default navbar-fixed-top" style="height: 100px;background-color: forestgreen">-->
+<!--        background-color: white-->
+<!--        <div style="position: absolute;left: 10px;top: 10px;">-->
+<!--            <img src="src/cool_map/logo.png" style="width: 300px;height: 78px">-->
+<!--        </div>-->
+
+<!--        <div style="position: absolute;right: 60px;top: 30px;">-->
+<!--            <div class="collapse navbar-collapse" id="#navbar-collapse-1">-->
+<!--                <ul class="nav navbar-nav navbar-right main-nav">-->
+<!--                    <li class="active"><a href="index.html">首页</a></li>-->
+<!--                </ul>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="container">-->
+<!--            &lt;!&ndash; Brand and toggle get grouped for better mobile display &ndash;&gt;-->
+<!--            <div class="navbar-header">-->
+<!--                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"-->
+<!--                        data-target="#navbar-collapse-1">-->
+<!--                    <span class="sr-only">Toggle navigation</span>-->
+<!--                    <span class="icon-bar"></span>-->
+<!--                    <span class="icon-bar"></span>-->
+<!--                    <span class="icon-bar"></span>-->
+<!--                </button>-->
+<!--            </div>-->
+<!--        </div>-->
+        <!-- .container -->
+<!--    </nav>-->
+</div>
+
+
+<div id="mapArea">
+    <div id="map"></div>
+    <div id="mousePosition" class="custom-mouse-position"></div>
+    <input class="btn btn1" type="button" id="start" value="设置起点">
+    <input class="btn btn1" type="button" id="end" value="设置终点">
+    <input class="btn btn1" type="button" id="generate" value="生成路径">
+    <input class="btn btn1" type="button" id="shadow" value="阴影区域">
+    <div id="tuli">
+        <img style="width: 150px;height: 70px" src="src/cool_map/p1.jpg">
+    </div>
+</div>
+<div class="container" hidden>
+    <label for="latbox"><a>纬度： </a></label>
+    <input type="text" class="form-control" id="latbox">
+    <label for="lngbox"><a>经度： </a></label>
+    <input type="text" class="form-control" id="lngbox">
+    <label for="zonebox"><a>时区： </a></label>
+    <input type="text" class="form-control" id="zonebox">
+    <input type="checkbox" id="dstCheckbox" name="dst">
+    <label for="inputZeroAzimuth">零方位角</label>
+    <select name="inputZeroAzimuth" id="inputZeroAzimuth" class="form-control">
+        <option value="0" selected="">北</option>
+        <option value="180">南</option>
+    </select>
+    <button type="submit" class="btn btn-default text-center" id="mkCookie" name="mkCookie">保存位置</button>
+    <label for="yearbox">年： </label>
+    <input type="text" id="yearbox" name="year" class="form-control">
+    <label for="mosbox">月： </label>
+    <select name="mos" id="mosbox" class="form-control">
+        <option>一月</option>
+        <option>二月</option>
+        <option>三月</option>
+        <option>四月</option>
+        <option>五月</option>
+        <option>六月</option>
+        <option>七月</option>
+        <option>八月</option>
+        <option>九月</option>
+        <option>十月</option>
+        <option>十一月</option>
+        <option>十二月</option>
+    </select>
+    <label for="daybox"></label>
+    <select name="day" id="daybox" class="form-control"></select>
+    <input type="text" id="hrbox" name="hour" class="form-control" style="width: 50px;">：
+    <input type="text" id="mnbox" name="mins" class="form-control" style="width: 50px;">：
+    <input type="text" id="scbox" name="secs" class="form-control" style="width: 50px;">
+    <label style="margin-right: 2em;"> <input type="checkbox" id="pmbox" name="pm">
+    </label>
+    <input type="text" class="form-control" id="eqtbox" name="eqTime" readonly="">
+    <input type="text" class="form-control" id="sdbox" name="solarDec" readonly="">
+    <input type="text" class="form-control" id="risebox" name="sunrise" readonly="">
+    <label class="green"><input type="checkbox" id="showsr" name="srshow"></label>
+    <input type="text" class="form-control" id="noonbox" name="solnoon" readonly="">
+    <input type="text" class="form-control" id="setbox" name="sunset" readonly="">
+    <label class="red"><input type="checkbox" id="showss" name="ssshow"></label>
+    <input type="text" class="form-control" id="azbox" name="az" readonly="" style="padding:6px 6px;">
+    <input type="text" class="form-control" id="elbox" name="el" readonly="" style="padding:6px 6px;">
+    <label class="yellow"><input type="checkbox" id="showae" name="aeshow"></label>
+</div>
+
+
+<script type="text/javascript" src="js/jquery/jquery-3.6.0.js"></script>
+<script>
+
+    let start = null, goal = null;
+    let turn = -1;
+    let listener;
+    //太阳高度角 方位角
+    let azAngel = 90, elAngle = 0;
+
+
+    function currentTime() {
+        var dateObj4 = new Date();
+        var nowhour = dateObj4.getHours();
+        var nowmins = dateObj4.getMinutes();
+        var nowsecs = dateObj4.getSeconds();
+        var thisYear = dateObj4.getYear();
+        if (thisYear <= 199) {
+            thisYear = (thisYear * 1) + 1900;
+        }
+        var thismonth = dateObj4.getMonth();
+        var thisday = dateObj4.getDate();
+        $('#daybox').val(thisday);
+        $('#mosbox').val(monthList[thismonth].abbr);
+        $('#hrbox').val(zeroPad(nowhour, 2));
+        $('#mnbox').val(zeroPad(nowmins, 2));
+        $('#scbox').val(zeroPad(nowsecs, 2));
+        $('#yearbox').val(thisYear);
+    }
+
+    function sunInfo() {
+        currentTime();
+        var lat = "30.541093";
+        $('#latbox').val(lat);
+
+        var lon = "114.360734";
+        $('#lngbox').val(lon);
+
+        var gmt = "8";
+        $('#zonebox').val(gmt);
+
+        var inputZeroAzimuth = "0";
+        $('#inputZeroAzimuth').val(inputZeroAzimuth);
+        // do calculations on default location and date
+        calculate();
+        //return [$("#azbox").val(), $("#elbox").val()]
+        return [45,45]
+
+    }
+
+    //创建定位要素
+    function createFeature(coordinate, path) {
+        const point = new ol.geom.Point(coordinate, "XY");
+        let style = new ol.style.Style({
+            image: new ol.style.Icon({
+                src: path,
+                scale: 0.2,
+                offset: [0, 25]
+            })
+        });
+        let feature = new ol.Feature({
+            geometry: point
+        });
+        feature.setStyle(style);
+        return feature;
+    }
+
+    $(function () {
+        let vectorSource = new ol.source.Vector;
+        let vectorLayer = new ol.layer.Vector({
+            source: vectorSource
+        });
+
+        let shadowSource = new ol.source.Vector;
+        let shadowLayer = new ol.layer.Vector({
+            source: shadowSource
+        });
+
+        function click(e) {
+            vectorSource.clear();
+            map.removeLayer(vectorLayer);
+
+            console.log(turn)
+
+            if (turn === 0) {
+                start = e.coordinate
+            } else if (turn === 1) {
+                goal = e.coordinate
+            }
+
+            if (start !== null)
+                vectorSource.addFeature(createFeature(start, "src/cool_map/start.png"))
+            if (goal !== null)
+                vectorSource.addFeature(createFeature(goal, "src/cool_map/goal.png"))
+
+            map.addLayer(vectorLayer);
+            map.un('singleclick', listener);
+            //turn = -1;
+        }
+
+        let map = new ol.Map({
+            target: 'map',
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                })
+            ],
+            view: new ol.View({
+                projection: 'EPSG:4326',
+                center: [114.36044632062782,30.535134126327467],
+                zoom: 15,
+                maxZoom: 20,
+                minZoom: 15
+            })
+        })
+
+        map.addLayer(shadowLayer)
+
+
+        //初始化地图
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:8081/webgis/MapInit",
+            async: true,
+            success: function (json) {
+            }
+        })
+
+
+        $("#generate").click(function () {
+
+            const angles = sunInfo();
+            azAngel = angles[0];
+            elAngle = angles[1]
+
+            $.ajax({
+                type: "GET",
+                data: "start=" + start + "&goal=" + goal + "&az=" + azAngel + "&el=" + elAngle,
+                url: "http://localhost:8081/webgis/PathGenerate",
+                async: true,
+                success: function (json) {
+                    map.removeLayer(vectorLayer);
+                    const shortPath = new ol.Feature({
+                        geometry: new ol.geom.LineString(json[0]),
+                    });
+                    shortPath.setStyle(
+                        new ol.style.Style({
+                            stroke: new ol.style.Stroke({
+                                width: 4,
+                                color: "#8c31cb",
+                                opacity: 0.5
+                            })
+                        })
+                    );
+
+                    const coolPath = new ol.Feature({
+                        geometry: new ol.geom.LineString(json[1]),
+                    });
+                    coolPath.setStyle(
+                        new ol.style.Style({
+                            stroke: new ol.style.Stroke({
+                                width: 4,
+                                color: "#15c8fd",
+                            })
+                        })
+                    );
+                    vectorSource.addFeature(shortPath);
+                    vectorSource.addFeature(coolPath)
+                    map.addLayer(vectorLayer)
+                }
+            })
+        })
+        $("#start").click(function () {
+            if (turn === -1 || turn === 1) {
+                turn = 0;
+                listener = map.on('singleclick', function (e) {
+                    click(e);
+                });
+            } else {
+                turn = -1;
+                map.un('singleclick', listener);
+            }
+
+
+        })
+
+
+        $("#end").click(function () {
+            if (turn === -1 || turn === 0) {
+                turn = 1;
+                listener = map.on('singleclick', function (e) {
+                    click(e);
+                });
+            } else {
+                turn = -1;
+                map.un('singleclick', listener);
+            }
+        })
+
+
+        $("#shadow").click(function () {
+
+            const angles = sunInfo();
+            azAngel = angles[0];
+            elAngle = angles[1];
+            $.ajax({
+                type: "GET",
+                data: "az=" + azAngel + "&el=" + elAngle,
+                url: "http://localhost:8081/webgis/ShadowGenerate",
+                async: true,
+                success: function (json) {
+                    map.removeLayer(vectorLayer)
+                    let style = new ol.style.Style({
+                        stroke: new ol.style.Scooltroke({
+                            width: 4,
+                            color: "rgba(72,73,73,0.44)"
+                        }),
+                        fill: new ol.style.Fill({
+                            color: "rgba(72,73,73,0.44)"
+                        })
+                    })
+                    for(let i = 0;i<json.length;++i){
+                        const area = new ol.Feature({
+                            geometry: new ol.geom.Polygon(json[i]),
+                        });
+                        area.setStyle(style);
+                        vectorSource.addFeature(area);
+                    }
+                    map.addLayer(vectorLayer)
+                }
+            })
+        })
+
+
+    })
+
+</script>
+</body>
+</html>

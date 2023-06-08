@@ -1,0 +1,212 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>walk map</title>
+    <header>
+        <h2 class="logo">cool</h2>
+        <nav class="navigation">
+            <a href="index.html">Home</a>
+            <a href="login.html">Log in</a>
+            <a href="message.html">Introduction</a>
+            <a href="map.html" class="active">Walk Map</a>
+<!--            <a href="cool_map.html">Cool Map</a>-->
+            <!--        <a href="service_home.html">Service</a>-->
+            <a href="whumap.html">WHU Map</a>
+        </nav>
+
+        <div class="checkbox-container">
+            <label><input type="checkbox" id="satellite" onclick="satelliteClick()">卫星地图</label>
+            <label><input type="checkbox"  id="traffic" onclick="trafficClick()">实时路况地图</label>
+        </div>
+
+        <button class="refresh_button" onclick="refreshPage()">刷新页面</button>
+
+    </header>
+
+    <link rel="stylesheet" href="css/map.css">
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+
+    <script type="text/javascript">
+        window._AMapSecurityConfig = {
+            securityJsCode:'62e8b068063229982b1becf39469e8dc',
+        }
+    </script>
+    <script src="https://cache.amap.com/lbs/static/es5.min.js"></script>
+
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=326271e0eda61222c7c7f2ef9dfac420&plugin=AMap.Walking"></script>
+<!--    <script src="https://webapi.amap.com/maps?v=1.4.15&key=326271e0eda61222c7c7f2ef9dfac420"></script>-->
+    <script  src="https://webapi.amap.com/maps?v=2.0&key=326271e0eda61222c7c7f2ef9dfac420&plugin=AMap.Walking"></script>
+<!--    <script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=326271e0eda61222c7c7f2ef9dfac420&plugin=AMap.AutoComplete"></script>-->
+    <script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
+    <script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+</head>
+
+<script>
+    function refreshPage() {
+        location.reload(); // 刷新页面
+    }
+</script>
+
+<script>
+
+    // var satellite = new AMap.TileLayer.Satellite();
+    // map.addLayer(satellite);
+    // satellite.hide();
+
+    function satelliteClick() {
+        var checkbox = document.getElementById("satellite");
+        if (checkbox.checked) {
+            // 当复选框被选中时的操作
+            //map.addLayer(satellite);
+            satellite.show();
+            // 在这里添加您希望触发的相应操作
+        } else {
+            // 当复选框取消选中时的操作
+            //map.removeLayer(satellite);
+            satellite.hide();
+            // 在这里添加您希望触发的相应操作
+        }
+    }
+</script>
+
+<script>
+    // var traffic = new AMap.TileLayer.Traffic();
+    // map.addLayer(traffic);
+    // traffic.hide();
+    function trafficClick() {
+       // var traffic = new AMap.TileLayer.Traffic();
+        var checkbox = document.getElementById("traffic");
+        if (checkbox.checked) {
+            // 当复选框被选中时的操作
+
+            //map.addLayer(traffic);
+            //map.addLayer(trafficLayer);
+            traffic.show();
+            // 在这里添加您希望触发的相应操作
+        } else {
+            // 当复选框取消选中时的操作
+            //map.removeLayer(traffic);
+            traffic.hide();
+
+            // 在这里添加您希望触发的相应操作
+        }
+    }
+</script>
+
+<body>
+<div id="container"></div>
+<div id="panel"></div>
+<div id="mapContainer"></div>
+<!--<input type="checkbox" id="satellite" onclick="satelliteClick()">卫星地图-->
+<!--<input type="checkbox" id="traffic" onclick="trafficClick()">实时路况地图-->
+
+<script type="text/javascript">
+    var map = new AMap.Map("container", {
+        // resizeEnable: true,
+        resizeEnable: true,
+        center: [114.305794,30.543277],//地图中心点
+        zoom: 13, //地图显示的缩放级别
+        showIndoorMap:true,
+    });
+
+    var satellite = new AMap.TileLayer.Satellite();
+    map.addLayer(satellite);
+    satellite.hide();
+
+    var traffic = new AMap.TileLayer.Traffic();
+    map.addLayer(traffic);
+    traffic.hide();
+
+    // var auto = new AMap.AutoComplete({
+    //     input: "tipinput"
+    // });
+
+    // 创建比例尺控件
+    AMap.plugin(['AMap.Scale'], function() {
+        var scale = new AMap.Scale();
+        map.addControl(scale);
+
+        // 自定义比例尺控件的样式
+        var scaleControl = document.createElement('div');
+        scaleControl.id = 'scaleControl';
+        scaleControl.innerHTML = scale.getScaleString();
+        map.getContainer().appendChild(scaleControl);
+
+        // 监听地图缩放事件，更新比例尺文字
+        map.on('zoomchange', function() {
+            scaleControl.innerHTML = scale.getScaleString();
+        });})
+
+    var startPoint, endPoint;
+    var startMarker, endMarker;
+
+    // 监听地图点击事件
+    map.on('click', function(e) {
+        var lnglat = e.lnglat;
+        var lng = lnglat.getLng();
+        var lat = lnglat.getLat();
+
+        if (!startPoint) {
+            startPoint = [lng, lat];
+            if (startMarker) {
+                startMarker.setMap(null); // 清除之前的标记
+            }
+            startMarker = new AMap.Marker({
+                position: [lng, lat],
+                map: map
+            });
+            console.log('起点经纬度:', startPoint);
+        } else if (!endPoint) {
+            endPoint = [lng, lat];
+            if (endMarker) {
+                endMarker.setMap(null); // 清除之前的标记
+            }
+            endMarker = new AMap.Marker({
+                position: [lng, lat],
+                map: map
+            });
+            console.log('终点经纬度:', endPoint);
+
+    //步行导航
+    var walking = new AMap.Walking({
+        map: map,
+        panel: "panel"
+    });
+
+    //根据起终点坐标规划步行路线
+    //        [116.399029, 39.845042], [116.436281, 39.880719]
+    walking.search(startPoint, endPoint, function(status, result) {
+        // result即是对应的步行路线数据信息，相关数据结构文档请参考  https://lbs.amap.com/api/javascript-api/reference/route-search#m_WalkingResult
+        if (status === 'complete') {
+            log.success('绘制步行路线完成')
+        } else {
+            log.error('步行路线数据查询失败' + result)
+        }
+    });
+        }
+    })
+
+</script>
+
+<!--<button class="refresh_button" onclick="refreshPage()">刷新页面</button>-->
+
+<!--<div class="checkbox-container">-->
+<!--    <label><input type="checkbox" id="satellite" onclick="satelliteClick()">卫星地图</label>-->
+<!--    <label><input type="checkbox"  id="traffic" onclick="trafficClick()">实时路况地图</label>-->
+<!--</div>-->
+
+<!--<div class="info">-->
+<!--    <div class="input-item">-->
+<!--        <div class="input-item-prepend">-->
+<!--            <span class="input-item-text" style="width:8rem;">请输入关键字</span>-->
+<!--        </div>-->
+<!--        <input id='tipinput' type="text">-->
+<!--    </div>-->
+<!--</div>-->
+
+</body>
+</html>

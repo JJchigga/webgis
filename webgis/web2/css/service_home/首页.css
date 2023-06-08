@@ -1,0 +1,125 @@
+*{
+    /* 初始化 取消页面元素内外边距 */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    box-sizing: border-box;
+    font-family: 'Poppins',sans-serif;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+header
+{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 30px 100px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    z-index: 100;
+}
+
+/*调整logo*/
+.logo {
+    font-size: 2em;
+    color: #359381;
+    pointer-events: none;
+    margin-right: 270px;
+}
+
+.navigation a {
+    text-decoration: none;
+    color: #359381;
+    padding: 6px 15px;
+    border-radius: 20px;
+    margin: 0 10px;
+    font-weight: 600;
+}
+
+.navigation a:hover,
+.navigation a.active {
+    background: #359381;
+    color: #fff;
+}
+.parallax {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.nav{
+    position: fixed;
+    display: flow;
+    bottom: 0;
+    right: 25%;
+    background-color: #b7a1eb;
+    height: 100px;
+    /* 圆角 */
+    border-radius: 20px;
+    /* 溢出隐藏 */
+    overflow: hidden;
+    /* 阴影 */
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+.nav .menu{
+    list-style: none;
+    display: flex;
+    justify-content: center;
+}
+.nav .menu .item{
+    position: relative;
+    cursor: pointer;
+    padding: 0 10px;
+    width: 150px;
+    height: 100%;
+    /* 加个动画过渡 */
+    transition: all 0.4s ease;
+}
+.nav .menu .item:hover{
+    background-color: #a38bdb;
+}
+.nav .menu .item .link{
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100px;
+    color: #fff;
+    text-decoration: none;
+    overflow: hidden;
+    /* 加个动画过渡 */
+    transition: all 0.4s ease;
+}
+.nav .menu .item .link .fa{
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 100%;
+    text-align: center;
+    font-size: 32px;
+    /* 加个动画过渡 */
+    transition: all 0.4s ease;
+}
+.nav .menu .item .link span{
+    position: absolute;
+    width: 100%;
+    bottom: -50%;
+    left: 0;
+    text-align: center;
+    opacity: 0;
+    /* 加个动画过渡 */
+    transition: all 0.4s ease;
+}
+.nav .menu .item:hover .link span{
+    /* 鼠标移入文本出现、上移 */
+    opacity: 1;
+    bottom: 18px;
+}
+.nav .menu .item:hover .link .fa{
+    /* 鼠标移入图标上移 */
+    transform: translateY(-95%);
+}

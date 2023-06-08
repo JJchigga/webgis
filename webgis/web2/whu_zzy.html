@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WHUmap</title>
+    <!--    <title>Index</title>-->
+    <link rel="stylesheet" type="text/css" href="css/whumap/whu_zyy.css" charset="UTF-8">
+    <link rel="stylesheet" href="css/ol.css" type="text/css">
+    <script src="js/ol.js"></script>
+    <script
+            src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL">
+    </script>
+    <style>
+        .map {
+            height: 980px;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <h2 class="logo">cool</h2>
+    <nav class="navigation">
+        <a href="index.html">Home</a>
+        <!--        <a href="whumap.html">WHU Map</a>-->
+        <a href="whu_zzy.html" class="active">whumap</a>
+        <a href="map.html">Walk Map</a>
+
+    </nav>
+</header>
+
+<div id="map" class="map"></div>
+<script type="text/javascript">
+    var map = new ol.Map({
+        // name: "底图",
+        // source: new ol.source.XYZ({
+        //     url: "http://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7",//parent.TiandituKey()为天地图密钥,
+        //     wrapX: false
+        // }),
+        target: 'map',
+        layers: [
+            new ol.layer.Tile({
+                source: new ol.source.TileWMS({
+                    url: 'http://localhost:8080/geoserver/cite/wms', //  这个地址是在geoserver里面进行图层预览的地址是一致
+                    params: {
+                        'LAYERS': 'cite:china_city', // 这里的名字需要与空间定义的一样
+                        'TILED': true
+                    },
+                    serverType: 'geoserver',
+                    transition: 0
+                })
+            })
+        ],
+        view: new ol.View({
+            center: ol.proj.fromLonLat([114,30]),
+            //projection: 'EPSG:4326',//   中心坐标
+            zoom: 5
+        })
+    });
+    var WHU_Map = new ol.layer.Tile({
+        name: "底图",
+        source: new ol.source.XYZ({
+            url: "http://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7",//parent.TiandituKey()为天地图密钥,
+            wrapX: false
+        })
+    });
+    var map2 = new ol.Map({
+        //地图容器div的ID
+        target: 'mapCon',
+        //地图容器中加载的图层
+        layers: [WHU_Map, map],
+        //地图视图设置
+        view: new ol.View({
+            //地图初始中心点
+            projection: 'EPSG:4326',
+            center: [114.3645, 30.5395],
+            zoom: 5,
+
+        })
+    })
+</script>
+</body>
+</html>
